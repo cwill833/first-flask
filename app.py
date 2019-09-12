@@ -46,7 +46,12 @@ def get_book_by_isbn(isbn):
 def add_book():
     body = request.get_json()
     if v_request(body):
-        books.append(body)
+        new_book = {
+            "name": body["name"],
+            "price": body["price"],
+            "isbn": body["isbn"]
+        }
+        books.append(new_book)
         return "True"
     else:
         return "False"
