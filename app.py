@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
@@ -16,7 +16,10 @@ books = [
     }
 ]
 
+def v_request(obj):
+    return True if ('name' in obj and 'price' in obj and 'isbn' in obj) else False
 
+# GET /
 @app.route('/')
 def hello_world():
     return "Hello World!"
@@ -37,5 +40,16 @@ def get_book_by_isbn(isbn):
                 'price': book['price']
             }
     return jsonify(return_value)
+
+# POST /books
+@app.route('/books', methods=['POST'])
+def add_book():
+    body = request.get_json()
+    if v_request(body):
+        books.append(body)
+        return "True"
+    else:
+        return "False"
+
 
 app.run(port=5000)
