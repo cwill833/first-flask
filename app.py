@@ -77,7 +77,23 @@ def replace_book(isbn):
         if book['isbn'] == isbn:
             books[i] = book_update
             break
+        i += 1
     response = Response('', status=204)
     return response
+
+# DELETE /books/isbn
+@app.route('/books/<int:isbn>', methods=['DELETE'])
+def delete_book(isbn):
+    i = 0
+    for book in books:
+        if book['isbn'] == isbn:
+            books.pop(i)
+            break
+        i += 1
+
+    return Response("", status=202)
+
+
+
 
 app.run(port=5000)
