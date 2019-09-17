@@ -91,7 +91,7 @@ def delete_book(isbn):
             break
         i += 1
 
-    return Response("", status=202)
+    return Response("", status=204)
 
 
 
