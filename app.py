@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response
 
 app = Flask(__name__)
 
@@ -52,6 +52,7 @@ def add_book():
             "isbn": body["isbn"]
         }
         books.append(new_book)
+        Response("", 201, "")
         return "True"
     else:
         return "False"
