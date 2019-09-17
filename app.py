@@ -88,10 +88,10 @@ def delete_book(isbn):
     for book in books:
         if book['isbn'] == isbn:
             books.pop(i)
-            break
+            return Response("", status=204)
         i += 1
+    return Response('', status=404)
 
-    return Response("", status=204)
 
 
 
