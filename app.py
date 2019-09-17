@@ -60,7 +60,7 @@ def add_book():
             "error": "invalid book object passed in request",
             "helpString": "Data passed in similar to this {'name':'bookname', 'price':'bookPrice, 'isbn': 'isbnOfBook'"
         }
-        response = Response(json.dumps(invalidBookObjectErrorMsg), status=400, mimetype='application/json')
+        response = Response(json.dumps(invalidBookObjectErrorMsg), status=400, mimetype='application/json') # json.dumps is used to convert the object into json since that is what we are sending back
         return response
 
 
