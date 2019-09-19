@@ -7,7 +7,21 @@ from functools import wraps
 import json, datetime, jwt
 
 app.config['SECRET_KEY'] = 'rich'
+def v_request(obj):
+    return True if ('name' in obj and 'price' in obj and 'isbn' in obj) else False
 
+def token_required(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        token = request.args.get('token')
+        try:
+            jwt.decode(token, app.config['SECRET_KEY'])
+            return f(*args, **kwargs)
+        except:
+            return jsonify({'error': 'Need a valid token to view this page'}), 401
+    return wrapper
+
+# POST /login
 @app.route('/login', methods=['POST'])
 def get_token():
     request_data = request.get_json()
@@ -23,18 +37,6 @@ def get_token():
     else:
         return Response('', 401, mimetype='application/json')
 
-def v_request(obj):
-    return True if ('name' in obj and 'price' in obj and 'isbn' in obj) else False
-def token_required(f):
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        token = request.args.get('token')
-        try:
-            jwt.decode(token, app.config['SECRET_KEY'])
-            return f(*args, **kwargs)
-        except:
-            return jsonify({'error': 'Need a valid token to view this page'}), 401
-    return wrapper
 
 # GET /
 @app.route('/')
