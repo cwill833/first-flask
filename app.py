@@ -2,6 +2,8 @@ from flask import Flask, jsonify, request, Response
 from BookModel import *
 from UserModel import User
 from settings import *
+from functools import wraps
+
 import json, datetime, jwt
 
 app.config['SECRET_KEY'] = 'rich'
@@ -10,7 +12,7 @@ app.config['SECRET_KEY'] = 'rich'
 def get_token():
     request_data = request.get_json()
     username = str(request_data['username'])
-    password = str(request_data['password '])
+    password = str(request_data['password'])
 
     match = User.username_password_match(username, password)
 
@@ -23,6 +25,16 @@ def get_token():
 
 def v_request(obj):
     return True if ('name' in obj and 'price' in obj and 'isbn' in obj) else False
+def token_required(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        token = request.args.get('token')
+        try:
+            jwt.decode(token, app.config['SECRET_KEY'])
+            return f(*args, **kwargs)
+        except:
+            return jsonify({'error': 'Need a valid token to view this page'}), 401
+    return wrapper
 
 # GET /
 @app.route('/')
@@ -32,11 +44,6 @@ def hello_world():
 # GET /books
 @app.route('/books')
 def show_books():
-    token = request.args.get('token')
-    try:
-        jwt.decode(token, app.config['SECRET_KEY'])
-    except:
-        return jsonify({'error': 'Need a valid token to view this page'}), 401
     return jsonify({'books': Book.get_all_books() })
 
 # GET /books/isbn
@@ -47,6 +54,7 @@ def get_book_by_isbn(isbn):
 
 # POST /books
 @app.route('/books', methods=['POST'])
+@token_required
 def add_book():
     body = request.get_json()
     if v_request(body):
@@ -64,6 +72,7 @@ def add_book():
 
 # PUT /books/isbn
 @app.route('/books/<int:isbn>', methods=['PUT'])
+@token_required
 def replace_book(isbn):
     request_data = request.get_json()
     Book.replace_book(isbn, request_data['name'], request_data['price'])
@@ -72,6 +81,7 @@ def replace_book(isbn):
 
 # DELETE /books/isbn
 @app.route('/books/<int:isbn>', methods=['DELETE'])
+@token_required
 def delete_book(isbn):
     Book.delete_book(isbn)
     return Response('', status=204)
