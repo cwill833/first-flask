@@ -1,8 +1,25 @@
 from flask import Flask, jsonify, request, Response
 from BookModel import *
+from UserModel import User
 from settings import *
-import json
-from settings import *
+import json, datetime, jwt
+
+app.config['SECRET_KEY'] = 'rich'
+
+@app.route('/login', methods=['POST'])
+def get_token():
+    request_data = request.get_json()
+    username = str(request_data['username'])
+    password = str(request_data['password '])
+
+    match = User.username_password_match(username, password)
+
+    if match:
+        expiration_date = datetime.datetime.utcnow() + datetime.timedelta(seconds=100)
+        token = jwt.encode({'exp': expiration_date}, app.config['SECRET_KEY'], algorithm='HS256')
+        return token
+    else:
+        return Response('', 401, mimetype='application/json')
 
 def v_request(obj):
     return True if ('name' in obj and 'price' in obj and 'isbn' in obj) else False
@@ -15,6 +32,11 @@ def hello_world():
 # GET /books
 @app.route('/books')
 def show_books():
+    token = request.args.get('token')
+    try:
+        jwt.decode(token, app.config['SECRET_KEY'])
+    except:
+        return jsonify({'error': 'Need a valid token to view this page'}), 401
     return jsonify({'books': Book.get_all_books() })
 
 # GET /books/isbn
